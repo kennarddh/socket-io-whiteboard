@@ -1,44 +1,60 @@
-
-/**
- * Fix user-agent
- */
-
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+.main-canvas {
+    width: 800px;
+    border: 1px solid #e0e0e0;
+    margin: 0 auto;
+    display: flex;
+    flex-grow: 1;
 }
 
-/**
- * Canvas
- */
-
-.whiteboard {
-  height: 100%;
-  width: 100%;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
+.main-canvas .left-block {
+    width: 160px;
+    border-right: 1px solid #e0e0e0;
 }
 
-.colors {
-  position: fixed;
+.main-canvas .colors {
+    background-color: #ece8e8;
+    text-align: center;
+    padding-bottom: 5px;
+    padding-top: 10px;
 }
 
-.color {
-  display: inline-block;
-  height: 48px;
-  width: 48px;
+.main-canvas .brushes {
+    padding-top: 5px
 }
 
-.color.black { background-color: black; }
-.color.red { background-color: red; }
-.color.green { background-color: green; }
-.color.blue { background-color: blue; }
-.color.yellow { background-color: yellow; }
+.main-canvas .brushes #strokeLength{
+    width: 60%;
+    padding: 10px;
+}
+
+.main-canvas .buttons {
+    height: 80px;
+    padding-top: 10px;
+}
+
+.main-canvas .buttons button {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    background-color: #ece8e8;
+    margin-bottom: 5px;
+    padding: 5px;
+    height: 30px;
+    outline: none;
+    position: relative;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.main-canvas .right-block {
+    width: 640px;
+}
+
+.main-canvas #paint-canvas {
+    cursor: crosshair;
+}

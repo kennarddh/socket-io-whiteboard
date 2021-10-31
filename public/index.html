@@ -1,23 +1,32 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Socket.IO whiteboard</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Socket.IO whiteboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <canvas class="whiteboard" ></canvas>
-
-  <div class="colors">
-    <div class="color black"></div>
-    <div class="color red"></div>
-    <div class="color green"></div>
-    <div class="color blue"></div>
-    <div class="color yellow"></div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/main.js"></script>
+    <div class="game-page">
+        <div class="main-canvas">
+            <div class="left-block">
+                <div class="colors">
+                    <input type="color" id="color-picker">
+                </div>
+                <div class="brushes">
+                    <p>Stroke</p>
+                    <input type="number" id="strokeLength">
+                </div>
+                <div class="buttons">
+                    <button id="clear" type="button">Clear</button>
+                </div>
+            </div>
+            <div class="right-block">
+                <canvas id="paint-canvas" width="640" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/main.js"></script>
 </body>
 </html>
