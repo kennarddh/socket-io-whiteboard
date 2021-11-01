@@ -8,6 +8,7 @@
     margin: 0 auto;
     display: flex;
     flex-grow: 1;
+    display: none;
 }
 
 .main-canvas .left-block {
@@ -57,4 +58,30 @@
 
 .main-canvas #paint-canvas {
     cursor: crosshair;
+}
+
+/* room list page */
+.room-list-page .room-list, .room-list-page .room-list tr, .room-list-page .room-list td, .room-list-page .room-list th {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 10px;
+}
+.room-list-page .room-list {
+    margin-top: 10px;
+}
+
+/* room page */
+.room-page {
+    display: none;
+}
+.room-page .member-list, .room-page .member-list tr, .room-page .member-list td, .room-page .member-list th {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 10px;
+}
+.room-page .member-list {
+    margin-top: 10px;
+}
+.room-page .start-button {
+    display: none;
 }
