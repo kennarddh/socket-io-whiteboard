@@ -205,8 +205,6 @@ createRoomForm.addEventListener('submit', (event) => {
 })
 
 socket.on('successfully_join_room', (data) => {
-    console.log('received successfully_join_room')
-
     roomListPage.style.display = 'none'
     roomPage.style.display = 'block'
 
@@ -215,15 +213,10 @@ socket.on('successfully_join_room', (data) => {
     })
 })
 
-socket.onAny((event, ...arg) => {
-    console.log(event, arg)
-})
-
 const roomPlayerListTableBody = document.querySelector('.room-page .member-list tbody')
 const roomStartButton = document.querySelector('.room-page #start-button')
 
 socket.on('receive_room_player_list', (data) => {
-    console.log('receive_room_player_list')
     roomPlayerListTableBody.innerHTML = ''
 
     Object.keys(data.players).forEach((key) => {
@@ -272,7 +265,6 @@ socket.on('game_successfully_started', () => {
 const roomPlayerGameListTableBody = document.querySelector('.game-page .wrapper .player-list-wrap .player-list tbody')
 
 socket.on('receive_player_game_list', (data) => {
-    console.log("receive_player_game_list rel", data)
     roomPlayerGameListTableBody.innerHTML = ''
 
     Object.keys(data.players).forEach((key) => {

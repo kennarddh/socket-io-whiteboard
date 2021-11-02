@@ -52,10 +52,6 @@ io.on('connection', (socket) => {
 
                 delete users_temp[socket.id]
 
-                console.log('users_temp')
-                console.log(users_temp)
-                console.log(socket.id)
-
                 Object.keys(users_temp).forEach((key) => {
                     value = users_temp[key]
                     if (value.room == socket_room_before_delete) {
@@ -202,8 +198,6 @@ io.on('connection', (socket) => {
         io.emit('update_room_list', {
             rooms: rooms
         })
-        
-        console.log('emit successfully_join_room')
 
         io.to(socket.id).emit('successfully_join_room', {
             room_name: data.room_name,
@@ -226,10 +220,6 @@ io.on('connection', (socket) => {
             players: sendData,
             room_owner: rooms[data.room_name].owner
         })
-    })
-    
-    socket.onAny((event, ...arg) => {
-        console.log(event, arg)
     })
 
     socket.on('start_game', () => {
@@ -269,17 +259,14 @@ io.on('connection', (socket) => {
     })
 
     socket.on('game_ready', () => {
-        console.log(users)
         const room_name = users[socket.id].room
         let turn_before = ''
         let timer = 0
         if (socket.id === rooms[users[socket.id].room].owner) {
             const turnInterval = setInterval(() => {
                 try {
-                    console.log(users, socket.id)
                     if (!socket.id in users) return
-    
-                    console.log('interval', timer)
+
                     io.to(users[socket.id].room).emit('update_time', {
                         now_drawing: turn_before,
                         time: timer
@@ -289,8 +276,6 @@ io.on('connection', (socket) => {
     
                     if (timer <= 0) {
                         timer = 20
-                        
-                        console.log('timer <= 0', turn_before, timer)
     
                         io.to(users[socket.id].room).emit('clear')
                         let usersList = []
