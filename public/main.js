@@ -36,7 +36,7 @@ const SetBrushesColor = (color, lineWidth) => {
 
 // Mouse Down Event
 canvas.addEventListener("mousedown", (event) => {
-    if (!isCanDraw) return;
+    if (!isCanDraw) return
 
     setMouseCoordinates(event)
     isDrawing = true
@@ -64,21 +64,22 @@ socket.on("mousedown", (data) => {
 
 // Mouse Move Event
 canvas.addEventListener("mousemove", (event) => {
-    if (!isCanDraw) return;
+    if (!isCanDraw) return
 
     setMouseCoordinates(event)
 
     if (isDrawing) {
         context.lineTo(mouseX, mouseY)
         context.stroke()
+        
+        socket.emit("mousemove", {
+            mouseX: mouseX,
+            mouseY: mouseY,
+            color: context.strokeStyle,
+            lineWidth: context.lineWidth
+        })
     }
 
-    socket.emit("mousemove", {
-        mouseX: mouseX,
-        mouseY: mouseY,
-        color: context.strokeStyle,
-        lineWidth: context.lineWidth
-    })
 })
 
 socket.on("mousemove", (data) => {
@@ -92,7 +93,16 @@ socket.on("mousemove", (data) => {
 
 // Mouse Up Event
 canvas.addEventListener("mouseup", (event) => {
-    if (!isCanDraw) return;
+    if (!isCanDraw) return
+
+    setMouseCoordinates(event)
+    isDrawing = false
+
+    socket.emit('mouseup')
+})
+
+canvas.addEventListener('mouseleave', (event) => {
+    if (!isCanDraw) return
 
     setMouseCoordinates(event)
     isDrawing = false
@@ -114,7 +124,7 @@ const setMouseCoordinates = (event) => {
 const clearButton = document.getElementById("clear")
 
 clearButton.addEventListener("click", () => {
-    if (!isCanDraw) return;
+    if (!isCanDraw) return
 
     context.clearRect(0, 0, canvas.width, canvas.height)
     socket.emit('clear')
@@ -126,26 +136,29 @@ socket.on('clear', () => {
 
 // Toggle Can Draw
 
-const ToggleCanDraw = (bool) => {
-    const leftPanel = document.querySelector('.main-canvas .left-block')
+const SetIsCanDraw = (bool) => {
+    const leftPanel = document.querySelector('.game-page .wrapper .main-canvas .left-block')
     
     if (bool) {
+        isCanDraw = true
+        
+        leftPanel.style.visibility = 'unset'
+    } else {
         isCanDraw = false
 
         leftPanel.style.visibility = 'hidden'
-    } else {
-        isCanDraw = true
-
-        leftPanel.style.visibility = 'unset'
     }
 }
+
+roomListPage.style.display = 'block'
+gamePage.style.display = 'none'
 
 // join room
 const playerNameInput = document.querySelector('.room-list-page #player-name')
 
 socket.emit('update_room_list')
 
-const roomListTableBody = document.querySelector('.room-list-page .room-list')
+const roomListTableBody = document.querySelector('.room-list-page .room-list tbody')
 
 socket.on('update_room_list', (data) => {
     roomListTableBody.innerHTML = ''
@@ -209,7 +222,8 @@ socket.onAny((event, ...arg) => {
 const roomPlayerListTableBody = document.querySelector('.room-page .member-list tbody')
 const roomStartButton = document.querySelector('.room-page #start-button')
 
-socket.on('recive_room_player_list', (data) => {
+socket.on('receive_room_player_list', (data) => {
+    console.log('receive_room_player_list')
     roomPlayerListTableBody.innerHTML = ''
 
     Object.keys(data.players).forEach((key) => {
@@ -230,8 +244,102 @@ socket.on('recive_room_player_list', (data) => {
 })
 
 socket.on('exit_room', () => {
-    roomPage.style.display = 'none'
+    gamePage.style.display = 'none'
     roomListPage.style.display = 'block'
 
     socket.emit('update_room_list')
+})
+
+const roomPageStartButton = document.querySelector('.room-page #start-button')
+
+roomPageStartButton.addEventListener('click', (event) => {
+    event.preventDefault()
+
+    socket.emit('start_game')
+})
+
+// game page
+
+socket.on('game_successfully_started', () => {
+    roomPage.style.display = 'none'
+    gamePage.style.display = 'block'
+
+    socket.emit('get_player_game_list')
+
+    socket.emit('game_ready')
+})
+
+const roomPlayerGameListTableBody = document.querySelector('.game-page .wrapper .player-list-wrap .player-list tbody')
+
+socket.on('receive_player_game_list', (data) => {
+    console.log("receive_player_game_list rel", data)
+    roomPlayerGameListTableBody.innerHTML = ''
+
+    Object.keys(data.players).forEach((key) => {
+        item = data.players[key]
+        
+        let list = document.createElement('tr')
+        let name = document.createElement('td')
+        let score = document.createElement('td')
+        
+        name.innerHTML = item.name
+        score.innerHTML = item.score
+
+        list.appendChild(name)
+        list.appendChild(score)
+
+        roomPlayerGameListTableBody.appendChild(list)
+    })
+})
+
+const nowDrawingGamePage = document.querySelector('.game-page .wrapper .player-list-wrap #now-drawing')
+const nowQuestionGamePage = document.querySelector('.game-page .wrapper .player-list-wrap #draw')
+const TimerGamePage = document.querySelector('.game-page .wrapper .player-list-wrap #timer')
+
+socket.on('start_draw', (data) => {
+    nowDrawingGamePage.innerHTML = 'Now drawing : ' + data.now_drawing_name
+
+    if (data.now_drawing === socket.id) {
+        SetIsCanDraw(true)
+
+        nowQuestionGamePage.style.display = 'block'
+        nowQuestionGamePage.innerHTML = 'Draw ' + data.now_question
+        
+        TimerGamePage.style.display = 'block'
+        TimerGamePage.innerHTML = 'Timer : 20'
+    }
+})
+
+socket.on('stop_draw', (data) => {
+    if (data.now_drawing === socket.id) {
+        SetIsCanDraw(false)
+
+        nowQuestionGamePage.style.display = 'none'
+        nowQuestionGamePage.innerHTML = 'Draw '
+        
+        TimerGamePage.style.display = 'none'
+        TimerGamePage.innerHTML = 'Timer '
+    }
+})
+
+socket.on('update_time', (data) => {
+    if (data.now_drawing === socket.id) {
+        TimerGamePage.innerHTML = 'Timer : ' + data.time
+    }
+})
+
+const answerFormGamePage = document.querySelector('.game-page .wrapper #answer-input')
+
+answerFormGamePage.addEventListener('submit', (event) => {
+    event.preventDefault()
+
+    const input = answerFormGamePage.querySelector('#answer')
+
+    if (input.value) {
+        socket.emit('send_answer', {
+            answer: input.value
+        })
+    }
+
+    input.value = ''
 })

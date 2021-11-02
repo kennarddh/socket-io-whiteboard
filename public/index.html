@@ -38,22 +38,45 @@
         <button id="start-button" class="start-button">Start</button>
     </div>
     <div class="game-page">
-        <div class="main-canvas">
-            <div class="left-block">
-                <div class="colors">
-                    <input type="color" id="color-picker">
+        <div class="wrapper">
+            <div class="player-list-wrap">
+                <table class="player-list">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+                <p id="now-drawing">Now drawing : </p>
+                <p id="draw">Draw </p>
+                <p id="timer">Timer : </p>
+            </div>
+            <div class="main-canvas">
+                <div class="left-block">
+                    <div class="colors">
+                        <input type="color" id="color-picker">
+                    </div>
+                    <div class="brushes">
+                        <p>Stroke</p>
+                        <input type="number" id="strokeLength">
+                    </div>
+                    <div class="buttons">
+                        <button id="clear" type="button">Clear</button>
+                    </div>
                 </div>
-                <div class="brushes">
-                    <p>Stroke</p>
-                    <input type="number" id="strokeLength">
-                </div>
-                <div class="buttons">
-                    <button id="clear" type="button">Clear</button>
+                <div class="right-block">
+                    <canvas id="paint-canvas" width="500" height="600"></canvas>
                 </div>
             </div>
-            <div class="right-block">
-                <canvas id="paint-canvas" width="640" height="400"></canvas>
-            </div>
+            <form id="answer-input">
+                <h3>answer</h3>
+                <input type="text" id="answer" placeholder="answer">
+                <button>Submit</button>
+            </form>
         </div>
     </div>
     
