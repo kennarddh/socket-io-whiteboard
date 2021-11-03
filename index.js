@@ -124,18 +124,6 @@ io.on('connection', (socket) => {
         socket.to(users[socket.id].room).emit('drawing', data)
     })
 
-    socket.on('mousedown', (data) => {
-        io.to(users[socket.id].room).emit('mousedown', data)
-    })
-
-    socket.on('mousemove', (data) => {
-        io.to(users[socket.id].room).emit('mousemove', data)
-    })
-
-    socket.on('mouseup', () => {
-        io.to(users[socket.id].room).emit('mouseup')
-    })
-
     // room
     socket.on('update_room_list', () => {
         const sendRooms = {}
