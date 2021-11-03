@@ -10,115 +10,214 @@ const boundings = canvas.getBoundingClientRect()
 // Specifications
 let mouseX = 0
 let mouseY = 0
-context.strokeStyle = "black" // initial brush color
-context.lineWidth = 1 // initial brush width
+
+let color = 'black'
+let lineWidth = 1
+
+context.strokeStyle = color
+context.lineWidth = lineWidth
+
 let isDrawing = false
 let isCanDraw = false
+
+socket.onAny((event, ...arg) => {
+    console.log(event, arg)
+})
 
 // Handle Colors
 const colorPicker = document.querySelector("#color-picker")
 
 colorPicker.addEventListener("input", (event) => {
-    context.strokeStyle = event.target.value || "black"
+    color = event.target.value || "black"
+    context.strokeStyle = color
 })
 
 // Handle Brushes
 const brushes = document.querySelector("#strokeLength")
 
 brushes.addEventListener("input", (event) => {
-    context.lineWidth = event.target.value || 1
+    lineWidth = event.target.value || 1
+    context.lineWidth = lineWidth
 })
 
-const SetBrushesColor = (color, lineWidth) => {
+const drawLine = (startX, startY, endX, endY, color, lineWidth, emit) => {
+    context.beginPath()
+    context.moveTo(startX, startY)
+    context.lineTo(endX, endY)
     context.strokeStyle = color
     context.lineWidth = lineWidth
+    context.stroke()
+    context.closePath()
+
+    if (!emit) return
+
+    socket.emit('drawing', {
+        startX: startX,
+        startY: startY,
+        endX: endX,
+        endY: endY,
+        color: color,
+        lineWidth: lineWidth
+    })
 }
+
+socket.on('drawing', (data) => {
+    drawLine(
+        data.startX,
+        data.startY,
+        data.endX,
+        data.endY,
+        data.color,
+        data.lineWidth,
+        false
+    )
+})
+
+const throttle = (callback, delay) => {
+    let previousCall = new Date().getTime()
+
+    return (event) => {
+        let time = new Date().getTime()
+
+        if ((time - previousCall) >= delay) {
+            previousCall = time
+
+            callback(event)
+        }
+    }
+}
+
+const setMouseCoordinates = (event) => {
+    mouseX = (event.clientX - boundings.left)||(event.touches[0].clientX - boundings.left)
+    mouseY = (event.clientY - boundings.top)||(event.touches[0].clientY - boundings.top)
+}
+
+const onMouseDown = (event) => {
+    isDrawing = true
+
+    setMouseCoordinates(event)
+}
+
+const onMouseUp = (event) => {
+    if (!isDrawing) return
+
+    isDrawing = false
+    drawLine(
+        mouseX,
+        mouseY,
+        (event.clientX - boundings.left)||(event.touches[0].clientX - boundings.left),
+        (event.clientY - boundings.top)||(event.touches[0].clientY - boundings.top),
+        context.strokeStyle,
+        context.lineWidth,
+        true
+    )
+}
+
+const onMouseMove = (event) => {
+    if (!isDrawing) return
+
+    console.log('send')
+
+    drawLine(
+        mouseX,
+        mouseY,
+        (event.clientX - boundings.left)||(event.touches[0].clientX - boundings.left),
+        (event.clientY - boundings.top)||(event.touches[0].clientY - boundings.top),
+        context.strokeStyle,
+        context.lineWidth,
+        true
+    )
+    
+    setMouseCoordinates(event)
+}
+
+// Event listener
+
+// Mouse support
+canvas.addEventListener('mousedown', onMouseDown, false)
+canvas.addEventListener('mouseup', onMouseUp, false)
+canvas.addEventListener('mouseout', onMouseUp, false)
+canvas.addEventListener('mousemove', throttle(onMouseMove, 10), false)
+  
+//Touch support for mobile devices
+canvas.addEventListener('touchstart', onMouseDown, false)
+canvas.addEventListener('touchend', onMouseUp, false)
+canvas.addEventListener('touchcancel', onMouseUp, false)
+canvas.addEventListener('touchmove', throttle(onMouseMove, 10), false)
 
 // Mouse Down Event
-canvas.addEventListener("mousedown", (event) => {
-    if (!isCanDraw) return
+// canvas.addEventListener("mousedown", (event) => {
+//     if (!isCanDraw) return
 
-    setMouseCoordinates(event)
-    isDrawing = true
+//     setMouseCoordinates(event)
+//     isDrawing = true
 
-    // Start Drawing
-    context.beginPath()
-    context.moveTo(mouseX, mouseY)
+//     // Start Drawing
+//     context.beginPath()
+//     context.moveTo(mouseX, mouseY)
 
-    socket.emit("mousedown", {
-        mouseX: mouseX,
-        mouseY: mouseY,
-        color: context.strokeStyle,
-        lineWidth: context.lineWidth
-    })
-})
+//     socket.emit("mousedown", {
+//         mouseX: mouseX,
+//         mouseY: mouseY,
+//         color: context.strokeStyle,
+//         lineWidth: context.lineWidth
+//     })
+// })
 
-socket.on("mousedown", (data) => {
-    isDrawing = true
+// socket.on("mousedown", (data) => {
+//     isDrawing = true
 
-    SetBrushesColor(data.color, data.lineWidth)
+//     SetBrushesColor(data.color, data.lineWidth)
     
-    context.beginPath()
-    context.moveTo(data.mouseX, data.mouseY)
-})
+//     context.beginPath()
+//     context.moveTo(data.mouseX, data.mouseY)
+// })
 
-// Mouse Move Event
-canvas.addEventListener("mousemove", (event) => {
-    if (!isCanDraw) return
+// // Mouse Move Event
+// canvas.addEventListener("mousemove", (event) => {
+//     if (!isCanDraw) return
 
-    setMouseCoordinates(event)
+//     setMouseCoordinates(event)
 
-    if (isDrawing) {
-        context.lineTo(mouseX, mouseY)
-        context.stroke()
+//     if (isDrawing) {
+//         context.lineTo(mouseX, mouseY)
+//         context.stroke()
         
-        socket.emit("mousemove", {
-            mouseX: mouseX,
-            mouseY: mouseY,
-            color: context.strokeStyle,
-            lineWidth: context.lineWidth
-        })
-    }
+//         socket.emit("mousemove", {
+//             mouseX: mouseX,
+//             mouseY: mouseY,
+//             color: context.strokeStyle,
+//             lineWidth: context.lineWidth
+//         })
+//     }
 
-})
+// })
 
-socket.on("mousemove", (data) => {
-    if (isDrawing) {
-        SetBrushesColor(data.color, data.lineWidth)
+// socket.on("mousemove", (data) => {
+//     if (isDrawing) {
+//         SetBrushesColor(data.color, data.lineWidth)
 
-        context.lineTo(data.mouseX, data.mouseY)
-        context.stroke()
-    }
-})
+//         context.lineTo(data.mouseX, data.mouseY)
+//         context.stroke()
+//     }
+// })
 
-// Mouse Up Event
-canvas.addEventListener("mouseup", (event) => {
-    if (!isCanDraw) return
+// // Mouse Up Event
+// canvas.addEventListener("mouseup", (event) => {
+//     if (!isCanDraw) return
 
-    setMouseCoordinates(event)
-    isDrawing = false
+//     setMouseCoordinates(event)
+//     isDrawing = false
 
-    socket.emit('mouseup')
-})
+//     socket.emit('mouseup')
+// })
 
-canvas.addEventListener('mouseleave', (event) => {
-    if (!isCanDraw) return
-
-    setMouseCoordinates(event)
-    isDrawing = false
-
-    socket.emit('mouseup')
-})
-
-socket.on('mouseup', () => {
-    isDrawing = false
-})
+// socket.on('mouseup', () => {
+//     isDrawing = false
+// })
 
 // Handle Mouse Coordinates
-const setMouseCoordinates = (event) => {
-    mouseX = event.clientX - boundings.left
-    mouseY = event.clientY - boundings.top
-}
+
 
 // Handle Clear Button
 const clearButton = document.getElementById("clear")
@@ -205,8 +304,6 @@ createRoomForm.addEventListener('submit', (event) => {
 })
 
 socket.on('successfully_join_room', (data) => {
-    console.log('received successfully_join_room')
-
     roomListPage.style.display = 'none'
     roomPage.style.display = 'block'
 
@@ -215,15 +312,10 @@ socket.on('successfully_join_room', (data) => {
     })
 })
 
-socket.onAny((event, ...arg) => {
-    console.log(event, arg)
-})
-
 const roomPlayerListTableBody = document.querySelector('.room-page .member-list tbody')
 const roomStartButton = document.querySelector('.room-page #start-button')
 
 socket.on('receive_room_player_list', (data) => {
-    console.log('receive_room_player_list')
     roomPlayerListTableBody.innerHTML = ''
 
     Object.keys(data.players).forEach((key) => {
@@ -272,7 +364,6 @@ socket.on('game_successfully_started', () => {
 const roomPlayerGameListTableBody = document.querySelector('.game-page .wrapper .player-list-wrap .player-list tbody')
 
 socket.on('receive_player_game_list', (data) => {
-    console.log("receive_player_game_list rel", data)
     roomPlayerGameListTableBody.innerHTML = ''
 
     Object.keys(data.players).forEach((key) => {
@@ -300,14 +391,17 @@ socket.on('start_draw', (data) => {
     nowDrawingGamePage.innerHTML = 'Now drawing : ' + data.now_drawing_name
 
     if (data.now_drawing === socket.id) {
+        context.strokeStyle = color
+        context.lineWidth = lineWidth
+        
         SetIsCanDraw(true)
 
         nowQuestionGamePage.style.display = 'block'
         nowQuestionGamePage.innerHTML = 'Draw ' + data.now_question
         
-        TimerGamePage.style.display = 'block'
-        TimerGamePage.innerHTML = 'Timer : 20'
     }
+    TimerGamePage.style.display = 'block'
+    TimerGamePage.innerHTML = 'Timer : 20'
 })
 
 socket.on('stop_draw', (data) => {
@@ -317,15 +411,13 @@ socket.on('stop_draw', (data) => {
         nowQuestionGamePage.style.display = 'none'
         nowQuestionGamePage.innerHTML = 'Draw '
         
-        TimerGamePage.style.display = 'none'
-        TimerGamePage.innerHTML = 'Timer '
     }
+    TimerGamePage.style.display = 'none'
+    TimerGamePage.innerHTML = 'Timer '
 })
 
 socket.on('update_time', (data) => {
-    if (data.now_drawing === socket.id) {
-        TimerGamePage.innerHTML = 'Timer : ' + data.time
-    }
+    TimerGamePage.innerHTML = 'Timer : ' + data.time
 })
 
 const answerFormGamePage = document.querySelector('.game-page .wrapper #answer-input')

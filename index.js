@@ -120,6 +120,10 @@ io.on('connection', (socket) => {
         io.to(users[socket.id].room).emit('clear')
     })
 
+    socket.on('drawing', (data) => {
+        socket.to(users[socket.id].room).emit('drawing', data)
+    })
+
     socket.on('mousedown', (data) => {
         io.to(users[socket.id].room).emit('mousedown', data)
     })
@@ -227,10 +231,6 @@ io.on('connection', (socket) => {
             room_owner: rooms[data.room_name].owner
         })
     })
-    
-    socket.onAny((event, ...arg) => {
-        console.log(event, arg)
-    })
 
     socket.on('start_game', () => {
         let usersLength = 0
@@ -270,13 +270,11 @@ io.on('connection', (socket) => {
 
     socket.on('game_ready', () => {
         console.log(users)
-        const room_name = users[socket.id].room
         let turn_before = ''
         let timer = 0
         if (socket.id === rooms[users[socket.id].room].owner) {
             const turnInterval = setInterval(() => {
                 try {
-                    console.log(users, socket.id)
                     if (!socket.id in users) return
     
                     console.log('interval', timer)
